@@ -4,79 +4,70 @@
 -- To execute this file:
   -- psql -h 127.0.0.1 -d reviews -f schema.sql
 
-DROP TABLE IF EXISTS photos;
-DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS recommended;
-DROP TABLE IF EXISTS characteristics_id;
-DROP TABLE IF EXISTS characteristics_values;
-DROP TABLE IF EXISTS reviews_meta;
+-- DROP TABLE IF EXISTS reviews;
+-- DROP TABLE IF EXISTS photos;
+-- DROP TABLE IF EXISTS characteristics;
+-- DROP TABLE IF EXISTS characteristic_values;
 
--- Reviews data
+-- Reviews Metadata
 CREATE TABLE reviews(
-  product_id INT NOT NULL UNIQUE,
-  review_id INT NOT NULL UNIQUE,
-  name VARCHAR(50) NOT NULL,
+  product_id INT NOT NULL,
+  review_id INT NOT NULL,
   rating INT NOT NULL,
+  date BIGINT NOT NULL,
   summary TEXT NOT NULL,
-  response TEXT,
-  recommend BOOLEAN NOT NULL,
   body TEXT NOT NULL,
-  date TIMESTAMP NOT NULL,
-  reviewer_name VARCHAR(20) NOT NULL,
+  recommend BOOLEAN NOT NULL,
+  reported BOOLEAN NOT NULL,
+  reviewer_name VARCHAR NOT NULL,
+  reviewer_email VARCHAR NOT NULL,
+  response TEXT,
   helpfulness INT NOT NULL,
-  photo_id INT,
   PRIMARY KEY(product_id, review_id)
 );
 
-
+-- Reviews Photos
 CREATE TABLE photos(
-  photo_id INT,
+  id SERIAL,
+  review_id INT,
+  url VARCHAR,
+  PRIMARY KEY(id)
+);
+
+-- Reviews Characteristics
+CREATE TABLE characteristics(
+  id INT NOT NULL,
+  product_id INT NOT NULL,
+  name VARCHAR NOT NULL,
+  PRIMARY KEY(id)
+);
+
+-- Reviews Characteristic Values
+CREATE TABLE characteristic_values(
+  id INT NOT NULL,
+  characteristic_id INT NOT NULL,
   review_id INT NOT NULL,
-  url VARCHAR(200),
-  PRIMARY KEY(photo_id),
-  FOREIGN KEY(review_id)
-    REFERENCES reviews(review_id)
+  value INT NOT NULL,
+  PRIMARY KEY(id)
 );
 
--- Reviews META DATA
-CREATE TABLE reviews_meta(
-  product_id INT,
-  characteristics_id SERIAL UNIQUE,
-  recommended_id SERIAL UNIQUE,
-  PRIMARY KEY (product_id)
-);
+-- ETL
+-- COPY reviews(product_id, review_id, rating, date, summary, body, recommend, reported, reviewer_name, reviewer_email, response, helpfulness)
+-- FROM '/Users/jacky/Documents/Hack Reactor/RFP53/reviews.csv'
+-- DELIMITER ','
+-- CSV HEADER;
 
-CREATE TABLE recommended(
-  recommended_id INT NOT NULL,
-  true_total INT,
-  false_total INT,
-  PRIMARY KEY(recommended_id),
-  FOREIGN KEY (recommended_id)
-      REFERENCES reviews_meta(recommended_id)
-);
+-- COPY photos(id, review_id, url)
+-- FROM '/Users/jacky/Documents/Hack Reactor/RFP53/reviews_photos.csv'
+-- DELIMITER ','
+-- CSV HEADER;
 
-CREATE TABLE characteristics_id (
-  characteristics_id INT NOT NULL,
-  fit_id INT NULL,
-  quality_id INT NULL,
-  size_id INT NULL,
-  length_id INT NULL,
-  comfort_id INT NULL,
-  width_id INT NULL,
-  PRIMARY KEY(characteristics_id),
-  FOREIGN KEY(characteristics_id)
-    REFERENCES reviews_meta(characteristics_id)
-);
+-- COPY characteristics(id, product_id, name)
+-- FROM '/Users/jacky/Documents/Hack Reactor/RFP53/characteristics.csv'
+-- DELIMITER ','
+-- CSV HEADER;
 
-CREATE TABLE characteristics_values (
-  characteristics_id INT NOT NULL,
-  fit_value INT,
-  quality_value INT,
-  size_value INT,
-  length_value INT,
-  comfort_value INT,
-  width_value INT,
-  PRIMARY KEY(characteristics_id),
-  FOREIGN KEY(characteristics_id)
-    REFERENCES reviews_meta(characteristics_id)
-)
+-- COPY characteristic_values(id, characteristic_id, review_id, value)
+-- FROM '/Users/jacky/Documents/Hack Reactor/RFP53/characteristic_reviews.csv'
+-- DELIMITER ','
+-- CSV HEADER;
