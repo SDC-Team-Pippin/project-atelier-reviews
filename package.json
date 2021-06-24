@@ -1,0 +1,27 @@
+{
+  "name": "project-atelier-reviews",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7",
+    "pg": "^8.6.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.29.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SDC-Team-Pippin/project-atelier-reviews.git"
+  },
+  "author": "Jacky Chen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SDC-Team-Pippin/project-atelier-reviews/issues"
+  },
+  "homepage": "https://github.com/SDC-Team-Pippin/project-atelier-reviews#readme"
+}
