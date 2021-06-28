@@ -19,19 +19,23 @@ app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
 
-// Gets reviews
+// Retrieves reviews
 app.get('/reviews', (req, res) => {
   db.getReviews(req.query)
-    .then(response => {
-      res.send(response);
+    .then(reviews => {
+      res.send(reviews);
     })
     .catch(err => res.send());
 });
 
-// // Gets reviews metadata
-// app.get('/reviews/meta', (req, res) => {
-
-// });
+// Retrieves reviews metadata
+app.get('/reviews/meta', (req, res) => {
+  db.getReviewsMetadata(req.query)
+    .then(reviewsMetaData => {
+      res.send(reviewsMetaData);
+    })
+    .catch(err => res.send());
+});
 
 // // Adds a review
 // app.post('/reviews', (req, res) => {
