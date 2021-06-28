@@ -7,8 +7,8 @@ const pool = new Pool({
   port: 5432
 });
 
-
 // ===================== GET '/reviews/' ROUTES =====================>
+
 // Gets photo_id and url for every review_id
 const getPhotos = (reviewIDs) => {
   let photosPromises = [];
@@ -35,16 +35,16 @@ const getPhotos = (reviewIDs) => {
 
 // Gets all reviews for given product_id
 const getReviews = (params) => {
-  // const page = params.page;
-  // const count = params.count;
-  // const sort = params.sort;
-
+  const page = params.page;
+  const count = params.count;
   const productID = params.product_id;
   const reviewIDsArr = [];
   const query = `SELECT review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness FROM reviews WHERE product_id = ${productID}`;
 
   const productReview = {
     product: productID,
+    page: page,
+    count: count,
   };
 
   return pool
@@ -89,7 +89,7 @@ const getRatings = (productID) => {
 
       // Stringifies number values
       for (let key in ratings) {
-        key = ratings[key];
+        ratings[key] = JSON.stringify(ratings[key]);
       }
       return ratings;
     })
@@ -110,55 +110,89 @@ const getRecommended = (productID) => {
           recommended[response.rows[i].recommend]++;
         }
       }
+
+      // Stringifies number values
+      for (let key in recommended) {
+        recommended[key] = JSON.stringify(recommended[key]);
+      }
+
       return recommended;
     })
     .catch(err => console.error(err));
 };
 
-// Retrieves characteristics of a given product
-const getCharacteristics = (productID) => {
-  // OUTPUT: Object within object within object
-
-  // TODO:
-  // Find a way to connect the characteristic name to its id and value
-  // 1 - Query characteristics data to get NAMES
-  // 2 - Query characteristic_reviews to get IDs and VALUES of NAME
-
-  const characteristics = {};
-
-  const charNameQuery = `SELECT name FROM characteristics WHERE product_id = ${productID}`;
+// Gets all review IDs
+const getReviewIDs = (productID) => {
+  let reviewIDs = [];
+  const query = `SELECT review_id FROM reviews WHERE product_id = ${productID}`;
   return pool
-    .query(charNameQuery)
+    .query(query)
     .then(response => {
-      console.log('RESPONSE:', response.rows);
+      response.rows.map(review => reviewIDs.push(review.review_id));
+      return reviewIDs;
     })
     .catch(err => console.error(err));
+};
 
+// Gets characteristic_id and values for given review_id
+const getCharValues = (reviewIDs) => {
+  let charValues = [];
+  for (let i = 0; i < reviewIDs.length; i++) {
+    const query = `SELECT characteristic_id, value FROM characteristic_reviews WHERE review_id = ${reviewIDs[i]}`;
+    return pool
+      .query(query)
+      .then(values => {
+        for (let i = 0; i < values.rows.length; i++) {
+          var charObj = {
+            id: JSON.stringify(values.rows[i].characteristic_id),
+            value: JSON.stringify(values.rows[i].value)
+          };
+          charValues.push(charObj);
+        }
+
+        return charValues;
+      })
+      .catch(err => console.error(err));
+  }
+};
+
+// Retrieves characteristics of a given product
+const getCharacteristics = (productID) => {
+  const characteristics = {};
+  const charNameQuery = `SELECT name FROM characteristics WHERE product_id = ${productID}`;
+
+  return pool
+    .query(charNameQuery)
+    .then(charNames => {
+      // Adds characteristic names to object
+      for (let i = 0; i < charNames.rows.length; i++) {
+        let charName = charNames.rows[i].name;
+        characteristics[charName] = {};
+      }
+      return getReviewIDs(productID)
+        .then(reviewIDs => {
+          return getCharValues(reviewIDs)
+            .then(charValues => {
+              let counter = 0;
+              for (let key in characteristics) {
+                characteristics[key] = charValues[counter];
+                counter++;
+              }
+              return characteristics;
+            })
+            .catch(err => console.error(err));
+        })
+        .catch(err => console.error(err));
+    })
+    .catch(err => console.error(err));
 };
 
 // Gets review metadata for given product_id
 const getReviewsMetadata = (params) => {
-  // const page = params.page;
-  // const count = params.count;
-  // const sort = params.sort;
-
   const productID = params.product_id;
 
   const productReviewMeta = {
     product: productID,
-    // ratings: {
-    //   1: '1'
-    // },
-    // recommended: {
-    //   false: '1',
-    //   true: '1'
-    // },
-    // characteristics: {
-    //   fit: {
-    //     id: 1,
-    //     value: '1'
-    //   }
-    // }
   };
 
   return getRatings(productID)
