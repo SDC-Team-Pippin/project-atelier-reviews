@@ -21,12 +21,15 @@ app.listen(port, () => {
 
 // Gets reviews
 app.get('/reviews', (req, res) => {
-  db.getReviews();
-  res.end();
+  db.getReviews(req.query)
+    .then(response => {
+      res.send(response);
+    })
+    .catch(err => res.send());
 });
 
 // // Gets reviews metadata
-// app.get('/reviews/meata', (req, res) => {
+// app.get('/reviews/meta', (req, res) => {
 
 // });
 
