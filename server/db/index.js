@@ -218,38 +218,92 @@ const getReviewsMetadata = (params) => {
 
 // ===================== POST '/reviews/' ROUTES =====================>
 
+// Update reviews table
 const addToReviewTable = (params) => {
-  console.log('PARAMS:', params);
-
-  // Insert into reviews table
-  const productID = Number(params.product_id);
-  const rating = Number(params.rating);
-  const date = new Date().toISOString();
+  const productID = params.product_id;
+  const rating = params.rating;
+  const date = new Date().toISOString().replace('T', ' ').replace('Z', '');
   const summary = params.summary;
   const body = params.body;
-  const recommend = params.recommend;
-  const name = params.name; // reviewer_name
-  const email = params.email; // reviewer_email
+  const recommend = params.recommend === 'true';
+  const name = params.name;
+  const email = params.email;
 
-  const query = `INSERT INTO reviews(product_id, rating, date, summary, body, recommend, reviewer_name, reviewer_email)VALUES (${productID}, ${rating}, ${date}, ${summary}, ${body}, ${recommend}, ${name}, ${email})`;
+  const query = `INSERT INTO reviews(product_id, rating, date, summary, body, recommend, reviewer_name, reviewer_email, reported) VALUES (${productID}, ${rating}, '${date}', '${summary}', '${body}', ${recommend}, '${name}', '${email}', false)`;
 
   return pool
     .query(query)
-    .then(response => console.log('Review added! :)'))
+    .then(response => {
+      console.log('Review table updated! :)');
+    })
     .catch(err => console.error(err));
+};
+
+// Gets the most recent review_id
+const getLatestReviewID = () => {
+  const query = 'SELECT review_id FROM reviews ORDER BY review_id DESC LIMIT 1';
+  return pool
+    .query(query)
+    .then(response => {
+      return response.rows[0].review_id;
+    })
+    .catch(err => console.error(err));
+};
+
+// Update photo table
+const addToPhotoTable = (url) => {
+  if (!url) {
+    return;
+  } else {
+    return getLatestReviewID()
+      .then(id => {
+        const query = `INSERT INTO photos(review_id, url) VALUES (${id}, '${url}')`;
+        return pool
+          .query(query)
+          .then(response => console.log('Updated photos table! :)'))
+          .catch(err => console.error(err));
+      })
+      .catch(err => console.error(err));
+  }
+};
+
+// Update characteristic_reviews table
+const addToCharReviews = (chars) => { // { "6": 9, "4": 20 }
+  chars = JSON.parse(chars);
+  let charIDs = Object.keys(chars);
+  let charVals = Object.values(chars);
+  let charPromises = [];
+
+  getLatestReviewID()
+    .then(id => {
+      for (let i = 0; i < charIDs.length; i++) {
+        const query = `INSERT INTO characteristic_reviews(characteristic_id, review_id, value) VALUES (${charIDs[i]}, ${id}, ${charVals[i]})`;
+        charPromises.push(
+          pool
+            .query(query)
+            .catch(err => console.error(err))
+        );
+      }
+    })
+    .catch(err => console.error(err));
+
+  return Promise.all(charPromises).then(chars => {
+    console.log('Updated characteristic_reviews table! :)');
+  });
 
 };
 
 // Adds a review to the database
 const addReview = (params) => {
-
-  // Insert into photos table
-  const photos = params.photos; // [text]
-
-  // Insert into characteristic_reviews
-  const characteristics = params.characteristics; // { "14": 5, "15": 5 //...}
-
-  return addToReviewTable(params);
+  return addToReviewTable(params)
+    .then(response => {
+      return addToPhotoTable(params.photos)
+        .then(response => {
+          return addToCharReviews(params.characteristics)
+            .then(response => console.log('Adding review COMPLETE! :D'))
+            .catch(err => console.error(err));
+        });
+    });
 };
 
 // ===================== PUT ROUTES =====================>
