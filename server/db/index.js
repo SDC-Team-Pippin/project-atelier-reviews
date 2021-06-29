@@ -216,7 +216,64 @@ const getReviewsMetadata = (params) => {
 
 };
 
+// ===================== POST '/reviews/' ROUTES =====================>
+
+const addToReviewTable = (params) => {
+  console.log('PARAMS:', params);
+
+  // Insert into reviews table
+  const productID = Number(params.product_id);
+  const rating = Number(params.rating);
+  const date = new Date().toISOString();
+  const summary = params.summary;
+  const body = params.body;
+  const recommend = params.recommend;
+  const name = params.name; // reviewer_name
+  const email = params.email; // reviewer_email
+
+  const query = `INSERT INTO reviews(product_id, rating, date, summary, body, recommend, reviewer_name, reviewer_email)VALUES (${productID}, ${rating}, ${date}, ${summary}, ${body}, ${recommend}, ${name}, ${email})`;
+
+  return pool
+    .query(query)
+    .then(response => console.log('Review added! :)'))
+    .catch(err => console.error(err));
+
+};
+
+// Adds a review to the database
+const addReview = (params) => {
+
+  // Insert into photos table
+  const photos = params.photos; // [text]
+
+  // Insert into characteristic_reviews
+  const characteristics = params.characteristics; // { "14": 5, "15": 5 //...}
+
+  return addToReviewTable(params);
+};
+
+// ===================== PUT ROUTES =====================>
+
+const markHelpfulReview = (reviewID) => {
+  const query = `UPDATE reviews SET helpfulness = helpfulness + 1 WHERE review_id = ${reviewID}`;
+  return pool
+    .query(query)
+    .then(response => console.log('Marked a review as helpful! :D'))
+    .catch(err => console.error(err));
+};
+
+const reportReview = (reviewID) => {
+  const query = `UPDATE reviews SET reported = true WHERE review_id = ${reviewID}`;
+  return pool
+    .query(query)
+    .then(response => console.log('Reported bad review! >:('))
+    .catch(err => console.error(err));
+};
+
 module.exports = {
   getReviews,
-  getReviewsMetadata
+  getReviewsMetadata,
+  addReview,
+  markHelpfulReview,
+  reportReview
 };
