@@ -229,12 +229,12 @@ const addToReviewTable = (params) => {
   const name = params.name;
   const email = params.email;
 
-  const query = `INSERT INTO reviews(product_id, rating, date, summary, body, recommend, reviewer_name, reviewer_email, reported) VALUES (${productID}, ${rating}, '${date}', '${summary}', '${body}', ${recommend}, '${name}', '${email}', false)`;
+  const query = `INSERT INTO reviews(product_id, rating, date, summary, body, recommend, reviewer_name, reviewer_email, reported, helpfulness) VALUES (${productID}, ${rating}, '${date}', '${summary}', '${body}', ${recommend}, '${name}', '${email}', false, 0)`;
 
   return pool
     .query(query)
     .then(response => {
-      console.log('Review table updated! :)');
+      console.log('Updated reviews table! :)');
     })
     .catch(err => console.error(err));
 };
@@ -251,7 +251,7 @@ const getLatestReviewID = () => {
 };
 
 // Update photo table
-const addToPhotoTable = (url) => {
+const addToPhotoTable = (url) => { // CURRENTLY IS ONLY ABLE TO UPDATE ONE PHOTO PER REVIEW
   if (!url) {
     return;
   } else {
@@ -290,7 +290,6 @@ const addToCharReviews = (chars) => { // { "6": 9, "4": 20 }
   return Promise.all(charPromises).then(chars => {
     console.log('Updated characteristic_reviews table! :)');
   });
-
 };
 
 // Adds a review to the database

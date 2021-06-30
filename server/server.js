@@ -36,7 +36,7 @@ app.get('/reviews/meta', (req, res) => {
 // Adds a review
 app.post('/reviews', (req, res) => {
   db.addReview(req.query)
-    .then(response => res.send(response))
+    .then(response => res.status(201).send())
     .catch(err => res.status(400).send(err));
 });
 
