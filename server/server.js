@@ -35,21 +35,21 @@ app.get('/reviews/meta', (req, res) => {
 
 // Adds a review
 app.post('/reviews', (req, res) => {
-  db.addReview(req.query)
+  db.addReview(req.body)
     .then(response => res.status(201).send())
     .catch(err => res.status(400).send(err));
 });
 
 // Mark a review as helpful
 app.put('/reviews/:review_id/helpful', (req, res) => {
-  db.markHelpfulReview(req.query.review_id)
+  db.markHelpfulReview(req.params.review_id)
     .then(response => res.status(204).send())
     .catch(err => res.status(400).send(err));
 });
 
 // Report review
 app.put('/reviews/:review_id/report', (req, res) => {
-  db.reportReview(req.query.review_id)
+  db.reportReview(req.params.review_id)
     .then(response => res.status(204).send())
     .catch(err => res.status(400).send(err));
 });

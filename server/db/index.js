@@ -233,9 +233,6 @@ const addToReviewTable = (params) => {
 
   return pool
     .query(query)
-    .then(response => {
-      console.log('Updated reviews table! :)');
-    })
     .catch(err => console.error(err));
 };
 
@@ -260,7 +257,6 @@ const addToPhotoTable = (url) => { // CURRENTLY IS ONLY ABLE TO UPDATE ONE PHOTO
         const query = `INSERT INTO photos(review_id, url) VALUES (${id}, '${url}')`;
         return pool
           .query(query)
-          .then(response => console.log('Updated photos table! :)'))
           .catch(err => console.error(err));
       })
       .catch(err => console.error(err));
@@ -269,7 +265,6 @@ const addToPhotoTable = (url) => { // CURRENTLY IS ONLY ABLE TO UPDATE ONE PHOTO
 
 // Update characteristic_reviews table
 const addToCharReviews = (chars) => { // { "6": 9, "4": 20 }
-  chars = JSON.parse(chars);
   let charIDs = Object.keys(chars);
   let charVals = Object.values(chars);
   let charPromises = [];
@@ -287,9 +282,7 @@ const addToCharReviews = (chars) => { // { "6": 9, "4": 20 }
     })
     .catch(err => console.error(err));
 
-  return Promise.all(charPromises).then(chars => {
-    console.log('Updated characteristic_reviews table! :)');
-  });
+  return Promise.all(charPromises);
 };
 
 // Adds a review to the database
@@ -299,7 +292,6 @@ const addReview = (params) => {
       return addToPhotoTable(params.photos)
         .then(response => {
           return addToCharReviews(params.characteristics)
-            .then(response => console.log('Adding review COMPLETE! :D'))
             .catch(err => console.error(err));
         });
     });
@@ -311,7 +303,6 @@ const markHelpfulReview = (reviewID) => {
   const query = `UPDATE reviews SET helpfulness = helpfulness + 1 WHERE review_id = ${reviewID}`;
   return pool
     .query(query)
-    .then(response => console.log('Marked a review as helpful! :D'))
     .catch(err => console.error(err));
 };
 
@@ -319,7 +310,6 @@ const reportReview = (reviewID) => {
   const query = `UPDATE reviews SET reported = true WHERE review_id = ${reviewID}`;
   return pool
     .query(query)
-    .then(response => console.log('Reported bad review! >:('))
     .catch(err => console.error(err));
 };
 
